@@ -37,6 +37,8 @@ ball.shape("circle")
 ball.color("white")
 ball.penup()
 ball.goto(0, 0)
+ball.dx = .08
+ball.dy = .08
 
 #Object controls
 
@@ -71,3 +73,28 @@ win.onkeypress(pad_b_down, 'Down')
 # Main game loop
 while True:
     win.update()
+
+    #Movin the ball
+    ball.sety(ball.ycor() + ball.dy)
+    ball.setx(ball.xcor() + ball.dx)
+
+    #Adding border
+    #Top
+    if ball.ycor() > 290:
+        ball.sety(290)
+        ball.dy *= -1
+
+    #Bottom
+    if ball.ycor() < -290:
+        ball.sety(-290)
+        ball.dy *= -1
+
+    #Right
+    if ball.xcor() > 390:
+        ball.goto(0,0)
+        ball.dx *= -1
+
+    #Left
+    if ball.xcor() < -390:
+        ball.goto(0,0)
+        ball.dx *= -1
