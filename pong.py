@@ -38,6 +38,36 @@ ball.color("white")
 ball.penup()
 ball.goto(0, 0)
 
+#Object controls
+
+def pad_a_up():
+    y = pad_a.ycor()
+    y += 20
+    pad_a.sety(y)
+
+def pad_a_down():
+    y = pad_a.ycor()
+    y -= 20
+    pad_a.sety(y)
+
+def pad_b_up():
+    y = pad_b.ycor()
+    y += 20
+    pad_b.sety(y)
+
+def pad_b_down():
+    y = pad_b.ycor()
+    y -= 20
+    pad_b.sety(y)
+
+#key Binding
+win.listen()
+win.onkeypress(pad_a_up, 'w')
+win.onkeypress(pad_a_down, 'z')
+win.onkeypress(pad_b_up, 'Up')
+win.onkeypress(pad_b_down, 'Down')
+
+
 # Main game loop
 while True:
     win.update()
