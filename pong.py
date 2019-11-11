@@ -5,6 +5,8 @@
 """
 
 import turtle as ttl
+import os
+
 
 win =  ttl.Screen()
 win.title("Pong By Guiltylogik")
@@ -40,8 +42,8 @@ ball.shape("circle")
 ball.color("white")
 ball.penup()
 ball.goto(0, 0)
-ball.dx = .08
-ball.dy = .08
+ball.dx = .15
+ball.dy = .15
 
 #ScoreBoard
 board = ttl.Turtle()
@@ -94,11 +96,13 @@ while True:
     if ball.ycor() > 290:
         ball.sety(290)
         ball.dy *= -1
+        os.system("aplay assets/bar.wav&")
 
     #Bottom
     if ball.ycor() < -290:
         ball.sety(-290)
         ball.dy *= -1
+        os.system("aplay assets/bar.wav&")
 
     #Right
     if ball.xcor() > 390:
@@ -107,6 +111,7 @@ while True:
         score_a += 1
         board.clear()
         board.write("Player A: {} Player B: {}".format(score_a, score_b), align="center", font=("Courier", 24, "bold"))
+        os.system("aplay assets/over.wav&")
 
     #Left
     if ball.xcor() < -390:
@@ -115,12 +120,15 @@ while True:
         score_b += 1
         board.clear()
         board.write("Player A: {} Player B: {}".format(score_a, score_b), align="center", font=("Courier", 24, "bold"))
+        os.system("aplay assets/over.wav&")
 
     #Pad and Ball collision
     if (ball.xcor() > 340 and ball.xcor() < 350) and (ball.ycor() < pad_b.ycor() + 40 and ball.ycor() > pad_b.ycor() -40):
         ball.setx(340)
         ball.dx *= -1
+        os.system("aplay assets/pad.wav&")
 
     if (ball.xcor() < -340 and ball.xcor() > -350) and (ball.ycor() < pad_a.ycor() + 40 and ball.ycor() > pad_a.ycor() -40):
         ball.setx(-340)
         ball.dx *= -1
+        os.system("aplay assets/pad.wav&")
