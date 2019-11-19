@@ -30,13 +30,13 @@ class cube(object):
         i = self.pos[0]
         j = self.pos[1]
 
-        pygame.draw.rect(surface, self.color, (i*dis+1, j*dis+1, dis-2, dis -2))
+        pygame.draw.rect(surface, self.color, (i*dis+1, j*dis+1, dis-2, dis-2))
 
         if eyes:
             centre = dis // 2
             radius = 3
             circle_middle = (i*dis+centre-radius, j*dis+8)
-            circle_middle2 = (i*dis+dis -radius*2, j*dis+8)
+            circle_middle2 = (i*dis+dis-radius*2, j*dis+8)
             pygame.draw.circle(surface, (0,0,0), circle_middle, radius)
             pygame.draw.circle(surface, (0,0,0), circle_middle2, radius)
 class snake(object):
@@ -98,10 +98,28 @@ class snake(object):
 
 
     def reset(self, pos):
-        pass
+        self.snake_head = cube(pos)
+        self.snake_body = []
+        self.snake_body.append(self.snake_head)
+        self.turns = {}
+        self.dirnx = 0
+        self.dirny = 1
 
     def addCube(self):
-        pass
+        tail = self.snake_body[-1]
+        dx, dy = tail.dirnx, tail.dirny
+
+        if dx == 1 and dy == 0:
+            self.snake_body.append(cube((tail.pos[0]-1, tail.pos[1])))
+        elif dx == -1 and dy == 0:
+            self.snake_body.append(cube((tail.pos[0]+1, tail.pos[1])))
+        elif dx == 0 and dy == -1:
+            self.snake_body.append(cube((tail.pos[0], tail.pos[1]-1)))
+        elif dx == 0 and dy == 1:
+            self.snake_body.append(cube((tail.pos[0], tail.pos[1]+1)))
+
+        self.snake_body[-1].dirnx = dx
+        self.snake_body[-1].dirny = dy
 
     def draw(self, surface):
         for i, c in enumerate(self.snake_body):
@@ -124,24 +142,45 @@ def drawGrid(w, rows, surface):
         pygame.draw.line(surface, (255,255,255), (0,y), (w,y))
 
 def redrawWindow(surface):
-    global rows, width, s
+    global rows, width, s, snack
     surface.fill((0,0,0))
     s.draw(surface)
+    snack.draw(surface)
     drawGrid(width, rows, surface)
     pygame.display.update()
 
 def randomSnack(rows, items):
-    pass
 
-def messageBox(subject, content):
-    pass
+    positions = items.snake_body
+
+    while True:
+        x = random.randrange(rows)
+        y = random.randrange(rows)
+        if len(list(filter(lambda z: z.pos == (x, y), positions))) > 0:
+            continue
+        else:
+            break
+
+    return (x, y)
+
+def message_box(subject, content):
+    info_win = tk.Tk()
+    info_win.attributes("-topmost", True)
+    info_win.withdraw()
+    msg.showinfo(subject, content)
+
+    try:
+        info_win.destroy()
+    except:
+        pass
 
 def main():
-    global width, height, rows, s
+    global width, height, rows, s, snack
     width, height = 500, 500
     rows = 20
     win = pygame.display.set_mode((width, height))
     s = snake((255,0,0), (10,10))
+    snack = cube(randomSnack(rows, s), color=(0, 255, 0))
     flag = True
 
     clock = pygame.time.Clock()
@@ -150,6 +189,17 @@ def main():
         pygame.time.delay(50)
         clock.tick(10)
         s.move()
+        if s.snake_body[0].pos == snack.pos:
+            s.addCube()
+            snack = cube(randomSnack(rows, s), color=(0, 255, 0))
+
+        for x in range(len(s.snake_body)):
+            if s.snake_body[x].pos in list(map(lambda z:z.pos, s.snake_body[x+1:])):
+                print("Score: ", len(s.snake_body))
+                message_box("You Lost!", "Score: {}.\n\nTry Again...!".format(len(s.snake_body)))
+                s.reset((10,10))
+                break
+
         redrawWindow(win)
     pass
 
