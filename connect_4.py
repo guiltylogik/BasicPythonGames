@@ -1,11 +1,14 @@
 import numpy as np
 import pygame
 import sys
+import math
 
 PIECE_ONE = 1
 PIECE_TWO = 2
 ROW_COUNT = 6
 COLUMN_COUNT = 7
+RED = (255,0,0)
+YELLOW = (255,255,0)
 
 def create_board():
     board = np.zeros((ROW_COUNT,COLUMN_COUNT))
@@ -58,6 +61,15 @@ def draw_board(board):
             pygame.draw.rect(screen, (0,0,255), (c*SQUARESIZE, r*SQUARESIZE+SQUARESIZE, SQUARESIZE, SQUARESIZE))
             pygame.draw.circle(screen, (0,0,0), (int(c*SQUARESIZE+SQUARESIZE/2), int(r*SQUARESIZE+SQUARESIZE+SQUARESIZE/2)), radius)
 
+    for c in range(COLUMN_COUNT):
+        for r in range(ROW_COUNT):
+            if board[r][c] == 1:
+                pygame.draw.circle(screen, RED, (int(c*SQUARESIZE+SQUARESIZE/2), height - int(r*SQUARESIZE+SQUARESIZE/2)), radius)
+            elif board[r][c] == 2:
+                pygame.draw.circle(screen, YELLOW, (int(c*SQUARESIZE+SQUARESIZE/2), height - int(r*SQUARESIZE+SQUARESIZE/2)), radius)
+
+    pygame.display.update()
+
 board = create_board()
 game_over = False
 turn = 0
@@ -74,39 +86,59 @@ screen = pygame.display.set_mode((width, height))
 draw_board(board)
 pygame.display.update()
 
+myfont = pygame.font.SysFont("Fira Code", 55)
+label_pos = (10, 10)
+
 while not game_over:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
 
+        if event.type == pygame.MOUSEMOTION:
+            pygame.draw.rect(screen, (0,0,0), (0,0, width, SQUARESIZE))
+            pos_x = event.pos[0]
+            if turn == 0:
+                pygame.draw.circle(screen, RED, (pos_x, int(SQUARESIZE/2)), radius)
+            else:
+                pygame.draw.circle(screen, YELLOW, (pos_x, int(SQUARESIZE/2)), radius)
+        pygame.display.update()
+
         if event.type == pygame.MOUSEBUTTONDOWN:
-            continue
+            pygame.draw.rect(screen, (0,0,0), (0,0, width, SQUARESIZE))
 
-    if turn == 0:
-        col = int(input("Player 1 Make your Selection (0-6): "))
+            if turn == 0:
+                pos_x = event.pos[0]
+                col = int(math.floor(pos_x/SQUARESIZE))
 
-        if is_valid_loc(board, col):
-            row = get_open_row(board, col)
-            drop_piece(board, row, col, PIECE_ONE)
+                if is_valid_loc(board, col):
+                    row = get_open_row(board, col)
+                    drop_piece(board, row, col, PIECE_ONE)
 
-            if check_win(board, PIECE_ONE):
-                print("Player One Wins")
-                game_over = True
+                    if check_win(board, PIECE_ONE):
+                        label = myfont.render("Player One Wins", 1, RED)
+                        screen.blit(label, label_pos)
+                        game_over = True
 
 
-    else:
-        col = int(input("Player 2 Make your Selection (0-6): "))
+            else:
+                pos_x = event.pos[0]
+                col = int(math.floor(pos_x/SQUARESIZE))
 
-        if is_valid_loc(board, col):
-            row = get_open_row(board, col)
-            drop_piece(board, row, col, PIECE_TWO)
+                if is_valid_loc(board, col):
+                    row = get_open_row(board, col)
+                    drop_piece(board, row, col, PIECE_TWO)
 
-            if check_win(board, PIECE_TWO):
-                print("Player Two Wins")
-                game_over = True
+                    if check_win(board, PIECE_TWO):
+                        label = myfont.render("Player Two Wins", 2, YELLOW)
+                        screen.blit(label, label_pos)
+                        game_over = True
 
-    turn += 1
-    turn %= 2
+            turn += 1
+            turn %= 2
 
-    print_board(board)
+            draw_board(board)
+            print_board(board)
+
+            if game_over:
+                pygame.time.wait(4000)
