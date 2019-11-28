@@ -12,7 +12,7 @@ class Game:
     def get_player_move(self, p):
         return self.moves[p]
 
-    def player(self, player, move):
+    def play(self, player, move):
         self.moves[player] = move
 
         if player == 0:
@@ -40,7 +40,7 @@ class Game:
             winner = 0
         elif p_one == "R" and p_two == "P":
             winner = 1
-        elif p_one == "S" and p_two == "p":
+        elif p_one == "S" and p_two == "P":
             winner = 0
         elif p_one == "P" and p_two == "S":
             winner = 1
