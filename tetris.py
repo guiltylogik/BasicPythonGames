@@ -25,6 +25,13 @@ play_width = 300  # meaning 300 // 10 = 30 width per block
 play_height = 600  # meaning 600 // 20 = 20 height per block
 block_size = 30
 
+# file location
+file_loc = 'assets/tetris_scores.txt'
+
+# Colors
+BLACK = (0,0,0)
+WHITE = (255, 255, 255)
+
 top_left_x = (s_width - play_width) // 2
 top_left_y = s_height - play_height
 
@@ -191,12 +198,32 @@ def check_lost(positions):
             return True
     return False
 
+def update_score(nscore):
+
+    score = high_score()
+
+    with open(file_loc, 'w') as file:
+        if int(score) > nscore:
+            file.write(str(score))
+        else:
+            file.write(str(nscore))
+
+def high_score():
+    with open(file_loc, 'r') as file:
+        lines = file.readlines()
+        score = lines[0].strip()
+
+    return score
+
 def get_shape():
     return Piece(5, 0, random.choice(shapes))
 
 
 def draw_text_middle(text, size, color, surface):
-    pass
+    font = pygame.font.SysFont('comicsans', size, bold=True)
+    label = font.render(text, 1, color)
+
+    surface.blit(label, (top_left_x + play_width/2 - (label.get_width()/2), top_left_y + play_height/2 - (label.get_height()/2)))
 
 def draw_grid(surface, grid):
     sx = top_left_x
@@ -227,6 +254,8 @@ def clear_rows(grid, locked):
                 new_key = (x, y + incri)
                 locked[new_key] = locked.pop(key)
 
+    return incri
+
 
 def draw_next_shape(shape, surface):
     font = pygame.font.SysFont("comicsans", 30)
@@ -244,14 +273,31 @@ def draw_next_shape(shape, surface):
 
     surface.blit(label, (sx + 10, sy - 30))
 
-def draw_window(surface, grid):
-    surface.fill((0,0,0))
+def draw_window(surface, grid, score = 0, hscore = 0):
+    surface.fill(BLACK)
 
     pygame.font.init()
     font = pygame.font.SysFont("comicsans", 60)
-    label = font.render("Tetris", 1, (255, 255, 255))
+    label = font.render("Tetris", 1, WHITE)
 
     surface.blit(label, (top_left_x + play_width/2 - (label.get_width()/2), 30))
+
+# Current Score
+    font = pygame.font.SysFont("comicsans", 30)
+    label = font.render("Score: " + str(score), 1, WHITE)
+
+    sx = top_left_x + play_width + 50
+    sy = top_left_y + play_width/2
+
+    surface.blit(label, (sx + 20, sy + 160))
+
+# High Score
+    label = font.render("High Score: " + str(hscore), 1, WHITE)
+
+    sx = top_left_x + play_width - 530
+    sy = top_left_y + play_width/2
+
+    surface.blit(label, (sx + 20, sy + 160))
 
     for i in range(len(grid)):
         for j in range(len(grid[i])):
@@ -274,11 +320,19 @@ def main(win):
     clock = pygame.time.Clock()
     fall_time = 0
     fall_speed = 0.27
+    level_time = 0
+    score = 0
+    hscore = high_score()
 
     while run:
         grid = create_grid(locked_pos)
         fall_time += clock.get_rawtime()
         clock.tick()
+
+        if level_time/1000 > 5:
+            level_time = 0
+            if fall_speed > 0.12:
+                fall_speed -= 0.005
 
         if fall_time/1000 > fall_speed:
             fall_time = 0
@@ -290,6 +344,7 @@ def main(win):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+                pygame.display.quit()
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
@@ -323,19 +378,36 @@ def main(win):
             current_piece = next_piece
             next_piece = get_shape()
             change_piece = False
-            clear_rows(grid, locked_pos)
+            score += clear_rows(grid, locked_pos) * 10
 
-        draw_window(win, grid)
+        draw_window(win, grid, score, hscore)
         draw_next_shape(next_piece, win)
         pygame.display.update()
 
         if check_lost(locked_pos):
+            draw_text_middle("You Lost!!", 80, WHITE, win)
+            pygame.display.update()
+            pygame.time.delay(2000)
             run = False
+            update_score(score)
 
-    pygame.display.quit()
 
 def main_menu(win):
-      main(win)
+
+    run = True
+
+    while run:
+        win.fill(BLACK)
+        draw_text_middle("Press Any Key To Play", 60, WHITE, win)
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.KEYDOWN:
+                main(win)
+
+    pygame.display.quit()
 
 win = pygame.display.set_mode((s_width, s_height))
 pygame.display.set_caption("Tetris By Guiltylogik")
